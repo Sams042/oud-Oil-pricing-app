@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>حاسبة الأسعار الفورية</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #171717;
+        --muted: #68635d;
+        --line: #ded7ce;
+        --paper: #fffaf2;
+        --panel: #ffffff;
+        --gold: #c7962d;
+        --gold-dark: #7c5a16;
+        --green: #14745a;
+        --shadow: 0 18px 55px rgba(76, 55, 21, 0.14);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Thmanyah Serif Text", "ThmanyahSerifText", Tahoma, Arial, sans-serif;
+        color: var(--ink);
+        background:
+          linear-gradient(135deg, rgba(199, 150, 45, 0.18), rgba(20, 116, 90, 0.1)),
+          var(--paper);
+      }
+
+      main {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 42px 0;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 24px;
+        align-items: end;
+        margin-bottom: 22px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(2rem, 4vw, 4rem);
+        line-height: 1;
+        letter-spacing: 0;
+      }
+
+      .subtitle {
+        max-width: 640px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 1rem;
+        line-height: 1.6;
+      }
+
+      .rate-card {
+        min-width: 250px;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.8);
+        box-shadow: var(--shadow);
+      }
+
+      .rate-label {
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .rate-value {
+        margin-top: 6px;
+        font-size: 1.7rem;
+        font-weight: 800;
+      }
+
+      .calculator {
+        display: grid;
+        grid-template-columns: 0.95fr 1.45fr;
+        gap: 22px;
+        align-items: start;
+      }
+
+      .visual-panel,
+      .table-panel {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.88);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .visual-panel {
+        padding: 24px;
+      }
+
+      .gold-stack {
+        display: grid;
+        gap: 12px;
+        margin: 12px 0 24px;
+      }
+
+      .bar {
+        height: 42px;
+        border-radius: 6px;
+        border: 1px solid rgba(124, 90, 22, 0.35);
+        background:
+          linear-gradient(90deg, rgba(255, 255, 255, 0.42), transparent 24%),
+          linear-gradient(180deg, #f2cc6a, #c7962d 48%, #a87418);
+        box-shadow: inset 0 1px rgba(255, 255, 255, 0.5), 0 10px 22px rgba(124, 90, 22, 0.15);
+      }
+
+      .bar:nth-child(1) {
+        width: 74%;
+      }
+
+      .bar:nth-child(2) {
+        width: 90%;
+      }
+
+      .bar:nth-child(3) {
+        width: 58%;
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .summary-item {
+        min-height: 86px;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fffdf8;
+      }
+
+      .summary-item span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      .summary-item strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 1.15rem;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 16px;
+        border-bottom: 1px solid var(--line);
+        background: #fffdf8;
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        color: var(--muted);
+        font-size: 0.82rem;
+        font-weight: 700;
+      }
+
+      select,
+      input {
+        width: 100%;
+        min-height: 44px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #fff;
+        color: var(--ink);
+        font: inherit;
+        font-weight: 700;
+        outline: none;
+      }
+
+      select {
+        min-width: 112px;
+        padding: 0 12px;
+      }
+
+      input {
+        padding: 0 12px;
+      }
+
+      input:focus,
+      select:focus {
+        border-color: var(--gold);
+        box-shadow: 0 0 0 3px rgba(199, 150, 45, 0.2);
+      }
+
+      .currency-field {
+        width: 132px;
+      }
+
+      .rounding-field {
+        width: 164px;
+      }
+
+      .clear-button {
+        align-self: end;
+        min-height: 44px;
+        padding: 0 16px;
+        border: 1px solid #b7aea1;
+        border-radius: 6px;
+        background: #191714;
+        color: #fff;
+        font: inherit;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .clear-button:hover {
+        background: #2b2822;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--line);
+        text-align: right;
+        vertical-align: middle;
+      }
+
+      th {
+        color: var(--muted);
+        background: #fbf5eb;
+        font-size: 0.76rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      tbody tr:last-child td {
+        border-bottom: 0;
+      }
+
+      tbody tr.active-row {
+        background: rgba(20, 116, 90, 0.08);
+      }
+
+      .item-name {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        font-weight: 850;
+      }
+
+      .item-name small {
+        color: var(--muted);
+        font-size: 0.82rem;
+        font-weight: 700;
+      }
+
+      .price-input {
+        max-width: 190px;
+      }
+
+      .per-gram {
+        color: var(--green);
+        font-weight: 850;
+        white-space: nowrap;
+      }
+
+      .hint {
+        margin: 16px;
+        padding: 12px 14px;
+        border: 1px solid rgba(20, 116, 90, 0.22);
+        border-radius: 8px;
+        background: rgba(20, 116, 90, 0.08);
+        color: #225a4c;
+        font-size: 0.92rem;
+        line-height: 1.5;
+      }
+
+      @media (max-width: 860px) {
+        main {
+          width: min(100% - 22px, 680px);
+          padding: 26px 0;
+        }
+
+        .topbar,
+        .calculator {
+          grid-template-columns: 1fr;
+        }
+
+        .rate-card {
+          min-width: 0;
+        }
+
+        .visual-panel {
+          padding: 18px;
+        }
+
+        .controls {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .currency-field,
+        .rounding-field {
+          width: auto;
+        }
+
+        .clear-button {
+          width: 100%;
+        }
+
+        th:nth-child(3),
+        td:nth-child(3) {
+          display: none;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .controls,
+        .summary-grid {
+          grid-template-columns: 1fr;
+        }
+
+        th,
+        td {
+          padding: 12px 10px;
+        }
+
+        .price-input {
+          max-width: 145px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="topbar" aria-labelledby="page-title">
+        <div>
+          <h1 id="page-title">حاسبة الأسعار الفورية</h1>
+          <p class="subtitle">
+            اكتب السعر المعروف في أي وزن، وستحسب الصفحة سعر الجرام وتحدّث باقي الأوزان مباشرة.
+          </p>
+        </div>
+        <aside class="rate-card" aria-live="polite">
+          <div class="rate-label">سعر الجرام الحالي</div>
+          <div class="rate-value" id="rateValue">--</div>
+        </aside>
+      </section>
+
+      <section class="calculator">
+        <aside class="visual-panel" aria-label="ملخص السعر">
+          <div class="gold-stack" aria-hidden="true">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+          </div>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <span>الوزن المدخل</span>
+              <strong id="knownWeight">--</strong>
+            </div>
+            <div class="summary-item">
+              <span>السعر المدخل</span>
+              <strong id="knownPrice">--</strong>
+            </div>
+            <div class="summary-item">
+              <span>أقل وزن</span>
+              <strong id="lowestPrice">--</strong>
+            </div>
+            <div class="summary-item">
+              <span>أعلى وزن</span>
+              <strong id="highestPrice">--</strong>
+            </div>
+          </div>
+        </aside>
+
+        <section class="table-panel" aria-label="جدول الحاسبة">
+          <div class="controls">
+            <label class="currency-field">
+              العملة
+              <select id="currency">
+                <option value="SAR">SAR</option>
+                <option value="AED">AED</option>
+                <option value="USD">USD</option>
+                <option value="OMR">OMR</option>
+                <option value="QAR">QAR</option>
+                <option value="KWD">KWD</option>
+                <option value="BHD">BHD</option>
+              </select>
+            </label>
+            <label class="rounding-field">
+              المنازل العشرية
+              <select id="decimals">
+                <option value="2">منزلتان</option>
+                <option value="0">بدون كسور</option>
+                <option value="3">3 منازل</option>
+              </select>
+            </label>
+            <button class="clear-button" type="button" id="clearButton">مسح</button>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>الوزن</th>
+                <th>السعر</th>
+                <th>سعر الجرام</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+
+          <p class="hint">
+            يمكنك إدخال السعر في أي صف، مثل 1kg أو Tola. الأوزان بالجرام هي نفس الأوزان التي طلبتها.
+          </p>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      const items = [
+        { name: "Q Tola", weight: 3, note: "3g" },
+        { name: "Half Tola", weight: 6, note: "6g" },
+        { name: "Tola", weight: 12, note: "12g" },
+        { name: "Ounce", weight: 28, note: "28g" },
+        { name: "خمسين", weight: 50, note: "50g", rtl: true },
+        { name: "Two Ounce", weight: 58, note: "58g" },
+        { name: "ثمن", weight: 125, note: "125g", rtl: true },
+        { name: "ربع", weight: 250, note: "250g", rtl: true },
+        { name: "نص", weight: 500, note: "500g", rtl: true },
+        { name: "1kg", weight: 1000, note: "1000g" },
+        { name: "2kg", weight: 2000, note: "2000g" },
+        { name: "5kg", weight: 5000, note: "5000g" }
+      ];
+
+      const rows = document.getElementById("rows");
+      const currency = document.getElementById("currency");
+      const decimals = document.getElementById("decimals");
+      const rateValue = document.getElementById("rateValue");
+      const knownWeight = document.getElementById("knownWeight");
+      const knownPrice = document.getElementById("knownPrice");
+      const lowestPrice = document.getElementById("lowestPrice");
+      const highestPrice = document.getElementById("highestPrice");
+      const clearButton = document.getElementById("clearButton");
+
+      let activeIndex = null;
+      let gramPrice = 0;
+
+      function formatMoney(value) {
+        if (!Number.isFinite(value)) return "--";
+        const places = Number(decimals.value);
+        return `${currency.value} ${value.toLocaleString(undefined, {
+          minimumFractionDigits: places,
+          maximumFractionDigits: places
+        })}`;
+      }
+
+      function formatRate(value) {
+        if (!Number.isFinite(value) || value <= 0) return "--";
+        return `${formatMoney(value)} / جرام`;
+      }
+
+      function createRows() {
+        rows.innerHTML = "";
+        items.forEach((item, index) => {
+          const row = document.createElement("tr");
+          row.dataset.index = String(index);
+
+          const nameCell = document.createElement("td");
+          const label = document.createElement("span");
+          label.className = "item-name";
+          if (item.rtl) label.dir = "rtl";
+          label.innerHTML = `<span>${item.name}</span><small>${item.note}</small>`;
+          nameCell.appendChild(label);
+
+          const priceCell = document.createElement("td");
+          const input = document.createElement("input");
+          input.className = "price-input";
+          input.inputMode = "decimal";
+          input.type = "number";
+          input.min = "0";
+          input.step = "any";
+          input.placeholder = "0";
+          input.setAttribute("aria-label", `سعر ${item.name}`);
+          input.addEventListener("input", () => updateFromInput(index, input.value));
+          input.addEventListener("focus", () => {
+            if (input.value) updateFromInput(index, input.value);
+          });
+          priceCell.appendChild(input);
+
+          const gramCell = document.createElement("td");
+          gramCell.className = "per-gram";
+          gramCell.textContent = "--";
+
+          row.append(nameCell, priceCell, gramCell);
+          rows.appendChild(row);
+        });
+      }
+
+      function updateFromInput(index, rawValue) {
+        const numericValue = Number(rawValue);
+        if (!rawValue || !Number.isFinite(numericValue) || numericValue <= 0) {
+          activeIndex = null;
+          gramPrice = 0;
+          syncRows();
+          return;
+        }
+
+        activeIndex = index;
+        gramPrice = numericValue / items[index].weight;
+        syncRows();
+      }
+
+      function syncRows() {
+        const inputs = rows.querySelectorAll("input");
+        const tableRows = rows.querySelectorAll("tr");
+        const perGramCells = rows.querySelectorAll(".per-gram");
+
+        inputs.forEach((input, index) => {
+          tableRows[index].classList.toggle("active-row", index === activeIndex);
+          perGramCells[index].textContent = formatRate(gramPrice);
+
+          if (activeIndex !== null && index !== activeIndex && gramPrice > 0) {
+            input.value = (gramPrice * items[index].weight).toFixed(Number(decimals.value));
+          }
+
+          if (activeIndex === null) {
+            input.value = "";
+          }
+        });
+
+        if (activeIndex === null || gramPrice <= 0) {
+          rateValue.textContent = "--";
+          knownWeight.textContent = "--";
+          knownPrice.textContent = "--";
+          lowestPrice.textContent = "--";
+          highestPrice.textContent = "--";
+          return;
+        }
+
+        const activeItem = items[activeIndex];
+        rateValue.textContent = formatRate(gramPrice);
+        knownWeight.textContent = `${activeItem.name} (${activeItem.note})`;
+        knownPrice.textContent = formatMoney(gramPrice * activeItem.weight);
+        lowestPrice.textContent = formatMoney(gramPrice * items[0].weight);
+        highestPrice.textContent = formatMoney(gramPrice * items[items.length - 1].weight);
+      }
+
+      currency.addEventListener("change", syncRows);
+      decimals.addEventListener("change", syncRows);
+      clearButton.addEventListener("click", () => {
+        activeIndex = null;
+        gramPrice = 0;
+        syncRows();
+        const firstInput = rows.querySelector("input");
+        if (firstInput) firstInput.focus();
+      });
+
+      createRows();
+      syncRows();
+    </script>
+  </body>
+</html>
